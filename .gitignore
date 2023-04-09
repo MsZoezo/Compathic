@@ -1,0 +1,6 @@
+*.cfg
+
+build-debug/
+build-release/
+
+.idea
