@@ -22,6 +22,20 @@ int loadBotConf(BotConfig *&botConfig, std::string file) {
     return 0;
 }
 
+int initBot(dpp::cluster *&bot, const std::string token, const bool debug) {
+    if(bot != nullptr) return (fmt::print("Can't replace existing bot instance.\n"), -6);
+
+    try {
+        bot = new dpp::cluster(token);
+    } catch(const dpp::invalid_token_exception &exception) {
+        return(fmt::print(stderr, "Provided bot token appears to be invalid.\n"), 4);
+    }
+
+    if(debug) bot->on_log(dpp::utility::cout_logger());
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     argh::parser cmdl(argc, argv);
 
@@ -31,14 +45,7 @@ int main(int argc, char** argv) {
 
     dpp::cluster *bot;
 
-    try {
-        bot = new dpp::cluster(botConfig->getToken());
-    } catch(const dpp::invalid_token_exception &exception) {
-        std::cerr << "The provided bot token appears to be invalid." << std::endl;
-        return 4;
-    }
-
-    bot->on_log(dpp::utility::cout_logger());
+    if(int ret = initBot(bot, botConfig->getToken(), true) != 0) return ret;
 
     bot->on_slashcommand([&bot](const dpp::slashcommand_t& event) {
         if(event.command.get_command_name() == "ping") {
