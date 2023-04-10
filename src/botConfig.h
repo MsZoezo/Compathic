@@ -17,9 +17,12 @@ private:
     libconfig::Config *config;
 
     std::string token;
-    dpp::snowflake guild;
+    std::optional<dpp::snowflake> guild;
 
     BotConfig(std::string fileName);
+
+    template<typename T>
+    std::optional<T> getOptional(const std::string &path);
 
 public:
     static BotConfig* getInstance(std::string fileName = "bot.cfg");
@@ -27,7 +30,7 @@ public:
     libconfig::Config* getConfig() const;
 
     std::string getToken() const;
-    dpp::snowflake getGuild() const;
+    std::optional<dpp::snowflake> getGuild() const;
 };
 
 #endif //COMPATHIC_BOTCONFIG_H

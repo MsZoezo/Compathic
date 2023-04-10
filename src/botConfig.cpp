@@ -11,21 +11,11 @@ BotConfig* BotConfig::botConfig = nullptr;
 BotConfig::BotConfig(std::string fileName) : config() {
     this->config = new libconfig::Config();
 
-    try {
-        this->config->readFile(fileName.c_str());
-    } catch(const libconfig::FileIOException &exception) {
-        throw exception;
-    } catch(const libconfig::ParseException &exception) {
-        throw exception;
-    }
+    this->config->readFile(fileName.c_str());
 
-    try {
-        this->token = this->config->lookup("token").operator std::string();
-        this->guild = this->config->lookup("guild").operator unsigned int();
-    } catch (const libconfig::SettingNotFoundException &exception) {
-        throw exception;
-    }
-}
+    this->token = this->config->lookup("botToken").operator std::string();
+
+    this->guild = this->getOptional<std::string>("guildId");
 }
 
 BotConfig *BotConfig::getInstance(std::string fileName) {
@@ -37,4 +27,17 @@ BotConfig *BotConfig::getInstance(std::string fileName) {
 
 libconfig::Config* BotConfig::getConfig() const {
     return this->config;
+}
+
+std::string BotConfig::getToken() const {
+    return this->token;
+}
+
+std::optional<dpp::snowflake> BotConfig::getGuild() const {
+    return this->guild;
+}
+
+template<typename T>
+std::optional<T> BotConfig::getOptional(const std::string &path) {
+    return (this->config->exists(path)) ? std::optional(this->config->lookup(path).operator T()) : std::nullopt;
 }
