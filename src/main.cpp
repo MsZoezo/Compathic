@@ -3,6 +3,8 @@
 #include <argh.h>
 #include "botConfig.h"
 #include <fmt/format.h>
+#include "commandHandler.h"
+#include "commands/pingCommand.h"
 
 int loadBotConf(BotConfig *&botConfig, std::string file) {
     if(botConfig != nullptr) return (std::cerr << "Not replacing existing config" << std::endl, -5);
@@ -47,10 +49,12 @@ int main(int argc, char** argv) {
 
     if(int ret = initBot(bot, botConfig->getToken(), true) != 0) return ret;
 
-    bot->on_slashcommand([&bot](const dpp::slashcommand_t& event) {
-        if(event.command.get_command_name() == "ping") {
-            event.reply("Pong!");
-        }
+    CommandHandler *handler = new CommandHandler();
+
+    handler->addCommand(new PingCommand(bot));
+
+    bot->on_slashcommand([&bot, &handler](const dpp::slashcommand_t& event) {
+        handler->runCommand(event);
     });
 
     bot->on_ready([&bot, &botConfig](const dpp::ready_t& event) {
